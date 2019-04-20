@@ -1,0 +1,35 @@
+syntax = "proto3";
+package terraform.aws;
+
+message AwsLb {
+  message AccessLogs {
+    string bucket = 1;
+    bool enabled = 2;
+    string prefix = 3;
+  }
+
+  message SubnetMapping {
+    string allocation_id = 1;
+    string subnet_id = 2;
+  }
+
+  repeated AccessLogs access_logs = 1;
+  string arn = 2;
+  string arn_suffix = 3;
+  string dns_name = 4;
+  bool enable_cross_zone_load_balancing = 5;
+  bool enable_deletion_protection = 6;
+  bool enable_http_2 = 7;
+  int64 idle_timeout = 8;
+  bool internal = 9;
+  string ip_address_type = 10;
+  string load_balancer_type = 11;
+  string name = 12;
+  string name_prefix = 13;
+  repeated string security_groups = 14;
+  repeated SubnetMapping subnet_mapping = 15;
+  repeated string subnets = 16;
+  map<string, string> tags = 17;
+  string vpc_id = 18;
+  string zone_id = 19;
+}

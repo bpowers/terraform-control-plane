@@ -2,8 +2,13 @@ package main
 
 import (
 	"bytes"
+	"flag"
 	"fmt"
+	"io/ioutil"
+	"os"
 	"sort"
+	"strings"
+	"sync"
 	"text/template"
 
 	"github.com/hashicorp/terraform/helper/schema"
@@ -42,6 +47,8 @@ type valueType struct {
 	ElementType fieldType
 }
 
+var setErrorOnce sync.Once
+
 func (ty *valueType) protoType(ctx *context) (string, error) {
 	var err error
 	ptype := ""
@@ -56,7 +63,9 @@ func (ty *valueType) protoType(ctx *context) (string, error) {
 	case schema.TypeString:
 		ptype = "string"
 	case schema.TypeSet:
-		log.Infof("TODO: add gogoprotobuf unique constraint for Set")
+		setErrorOnce.Do(func() {
+			log.Infof("TODO: add gogoprotobuf unique constraint for Set")
+		})
 		fallthrough
 	case schema.TypeList:
 		ptype = "repeated "
@@ -152,7 +161,7 @@ func newMessage(name string, resource *schema.Resource) (*messageDef, error) {
 
 		def := &fieldDef{
 			Name:     name,
-			Number:   uint(i),
+			Number:   uint(i) + 1,
 			Optional: s.Optional,
 		}
 
@@ -180,8 +189,11 @@ func newMessage(name string, resource *schema.Resource) (*messageDef, error) {
 			default:
 				log.Errorf(":ohno: Elem is something unexpected: %#v", e)
 			}
-		} else if name == "tags" {
-			// hack due to how Amazon uses `tagsSchemaComputed()`
+		}
+
+		// the default type for a map value is a string, so if
+		// it hasn't been explicitly set, set it here.
+		if s.Type == schema.TypeMap && elementType == nil {
 			elementType = &valueType{Type: schema.TypeString}
 		}
 
@@ -224,7 +236,7 @@ func (msg *messageDef) protoFields(parent *context) ([]string, error) {
 }
 
 var messageTemplate = template.Must(template.New("message").Parse(`{{.Indent}}message {{.Name}} {{"{"}}{{range .Messages}}
-{{$.Indent}}{{.}}
+{{.}}
 {{end}}{{range .Fields}}
 {{$.Indent}}  {{.}}{{end}}
 {{.Indent}}}`))
@@ -268,12 +280,35 @@ func (msg *messageDef) String() string {
 	return str
 }
 
+const (
+	usage = `Usage: %s [OPTION...] [--] DIR
+Emit protobufs for Terraform resources to a directory.
+`
+)
+
 func main() {
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, usage, os.Args[0])
+	}
+	flag.Parse()
+
+	if flag.NArg() != 1 {
+		flag.Usage()
+		os.Exit(1)
+	}
+
+	dirPath := flag.Arg(0)
+
+	err := os.MkdirAll(dirPath, 0775)
+	if err != nil {
+		log.Fatalf("MkdirAll(%q) failed: %s", dirPath, err)
+	}
+
 	tfProvider := aws.Provider()
 	provider := tfProvider.(*schema.Provider)
 
 	for name, resource := range provider.ResourcesMap {
-		if name != "aws_lb" {
+		if !strings.HasPrefix(name, "aws_lb") {
 			continue
 		}
 
@@ -287,6 +322,12 @@ func main() {
 			log.Errorf("newMessage(%s): %s", name, err)
 		}
 
-		fmt.Printf("%s\n", msg)
+		path := fmt.Sprintf("%s/%s.proto", dirPath, name)
+
+		contents := fmt.Sprintf(`syntax = "proto3";`+"\npackage terraform.aws;\n\n%s\n", msg.String())
+
+		if err = ioutil.WriteFile(path, []byte(contents), 0644); err != nil {
+			log.Fatalf("WriteFile(%q): %s", path, err)
+		}
 	}
 }
