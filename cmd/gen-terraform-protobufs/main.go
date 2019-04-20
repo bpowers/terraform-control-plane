@@ -93,8 +93,11 @@ type referenceType struct {
 }
 
 func (ty *referenceType) protoType(ctx *context) (string, error) {
-	log.Warnf("TODO: reference type %s", ty.Name)
-	return "/shrug", nil
+	msg := ctx.lookup(ty.Name)
+	if msg == nil {
+		return "", fmt.Errorf("reference to type not in context: %s", ty.Name)
+	}
+	return ty.Name, nil
 }
 
 // keys returns a sorted list of keys for a given schema map
@@ -163,13 +166,23 @@ func newMessage(name string, resource *schema.Resource) (*messageDef, error) {
 				if e == nil {
 					break
 				}
-				log.Infof("TODO: field %s elem resource: %v", name, e)
+				submsg, err := newMessage(name, e)
+				if err != nil {
+					return nil, errors.Wrapf(err, "newMessage(%s)", name)
+				}
+				msg.Messages = append(msg.Messages, submsg)
+				elementType = &referenceType{submsg.Name}
 			case *schema.Schema:
 				if e == nil {
 					break
 				}
 				elementType = &valueType{Type: e.Type}
+			default:
+				log.Errorf(":ohno: Elem is something unexpected: %#v", e)
 			}
+		} else if name == "tags" {
+			// hack due to how Amazon uses `tagsSchemaComputed()`
+			elementType = &valueType{Type: schema.TypeString}
 		}
 
 		def.Type = &valueType{
@@ -210,24 +223,33 @@ func (msg *messageDef) protoFields(parent *context) ([]string, error) {
 	return fields, nil
 }
 
-var messageTemplate = template.Must(template.New("message").Parse(`{{.Indent}}message {{.Name}} {
-{{range .Messages}}
-{{$.Indent}}  {{.}}{{end}}
-{{range .Fields}}
+var messageTemplate = template.Must(template.New("message").Parse(`{{.Indent}}message {{.Name}} {{"{"}}{{range .Messages}}
+{{$.Indent}}{{.}}
+{{end}}{{range .Fields}}
 {{$.Indent}}  {{.}}{{end}}
 {{.Indent}}}`))
 
 func (msg *messageDef) string(indent string) (string, error) {
 	var buf bytes.Buffer
 
+	var submsgs []string
+	for _, submsg := range msg.Messages {
+		msgStr, err := submsg.string(indent + "  ")
+		if err != nil {
+			errors.Wrapf(err, "submsg.string")
+		}
+		submsgs = append(submsgs, msgStr)
+	}
+
 	strFields, err := msg.protoFields(nil)
 	if err != nil {
 		errors.Wrapf(err, "msg.protoFields")
 	}
 	tmplCtx := messageTemplateContext{
-		Name:   msg.Name,
-		Indent: indent,
-		Fields: strFields,
+		Name:     msg.Name,
+		Indent:   indent,
+		Messages: submsgs,
+		Fields:   strFields,
 	}
 	err = messageTemplate.Execute(&buf, &tmplCtx)
 	if err != nil {
