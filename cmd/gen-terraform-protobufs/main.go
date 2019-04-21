@@ -322,7 +322,14 @@ func main() {
 	provider := tfProvider.(*schema.Provider)
 
 	for name, resource := range provider.ResourcesMap {
-		if !strings.HasPrefix(name, "aws_lb") {
+		// FIXME
+		switch name {
+		case "aws_autoscaling_group":
+			fallthrough
+		case "aws_instance":
+			fallthrough
+		case "aws_spot_instance_request":
+			log.Infof("skipping unsupported resource %q", name)
 			continue
 		}
 
