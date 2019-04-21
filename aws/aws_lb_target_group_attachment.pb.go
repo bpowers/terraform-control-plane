@@ -8,8 +8,6 @@ import (
 	proto "github.com/gogo/protobuf/proto"
 	io "io"
 	math "math"
-	reflect "reflect"
-	strings "strings"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -30,8 +28,9 @@ type AwsLbTargetGroupAttachment struct {
 	TargetId         string `protobuf:"bytes,4,opt,name=target_id,json=targetId,proto3" json:"target_id,omitempty"`
 }
 
-func (m *AwsLbTargetGroupAttachment) Reset()      { *m = AwsLbTargetGroupAttachment{} }
-func (*AwsLbTargetGroupAttachment) ProtoMessage() {}
+func (m *AwsLbTargetGroupAttachment) Reset()         { *m = AwsLbTargetGroupAttachment{} }
+func (m *AwsLbTargetGroupAttachment) String() string { return proto.CompactTextString(m) }
+func (*AwsLbTargetGroupAttachment) ProtoMessage()    {}
 func (*AwsLbTargetGroupAttachment) Descriptor() ([]byte, []int) {
 	return fileDescriptor_baa4f97e74e3f73e, []int{0}
 }
@@ -99,7 +98,7 @@ func init() {
 }
 
 var fileDescriptor_baa4f97e74e3f73e = []byte{
-	// 246 bytes of a gzipped FileDescriptorProto
+	// 216 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x52, 0x49, 0x2c, 0x2f, 0x8e,
 	0xcf, 0x49, 0x8a, 0x2f, 0x49, 0x2c, 0x4a, 0x4f, 0x2d, 0x89, 0x4f, 0x2f, 0xca, 0x2f, 0x2d, 0x88,
 	0x4f, 0x2c, 0x29, 0x49, 0x4c, 0xce, 0xc8, 0x4d, 0xcd, 0x2b, 0xd1, 0x2b, 0x28, 0xca, 0x2f, 0xc9,
@@ -110,68 +109,12 @@ var fileDescriptor_baa4f97e74e3f73e = []byte{
 	0x2c, 0x11, 0x95, 0x9f, 0x97, 0x2a, 0x24, 0xc4, 0xc5, 0x52, 0x90, 0x5f, 0x54, 0x22, 0xc1, 0xa4,
 	0xc0, 0xa8, 0xc1, 0x1c, 0x04, 0x66, 0x0b, 0x69, 0x70, 0x09, 0xa0, 0xba, 0xa7, 0x28, 0x4f, 0x82,
 	0x19, 0xac, 0x9f, 0xaf, 0x04, 0xc9, 0xc6, 0xa2, 0x3c, 0x21, 0x69, 0x2e, 0x4e, 0xa8, 0xca, 0xcc,
-	0x14, 0x09, 0x16, 0xb0, 0x12, 0x0e, 0x88, 0x80, 0x67, 0x8a, 0x93, 0xc9, 0x85, 0x87, 0x72, 0x0c,
-	0x37, 0x1e, 0xca, 0x31, 0x7c, 0x78, 0x28, 0xc7, 0xd8, 0xf0, 0x48, 0x8e, 0x71, 0xc5, 0x23, 0x39,
-	0xc6, 0x13, 0x8f, 0xe4, 0x18, 0x2f, 0x3c, 0x92, 0x63, 0x7c, 0xf0, 0x48, 0x8e, 0xf1, 0xc5, 0x23,
-	0x39, 0x86, 0x0f, 0x8f, 0xe4, 0x18, 0x27, 0x3c, 0x96, 0x63, 0xb8, 0xf0, 0x58, 0x8e, 0xe1, 0xc6,
-	0x63, 0x39, 0x86, 0x24, 0x36, 0xb0, 0x97, 0x8d, 0x01, 0x01, 0x00, 0x00, 0xff, 0xff, 0x1c, 0x1b,
-	0x09, 0x60, 0x1a, 0x01, 0x00, 0x00,
+	0x14, 0x09, 0x16, 0xb0, 0x12, 0x0e, 0x88, 0x80, 0x67, 0x8a, 0x93, 0xc4, 0x89, 0x47, 0x72, 0x8c,
+	0x17, 0x1e, 0xc9, 0x31, 0x3e, 0x78, 0x24, 0xc7, 0x38, 0xe1, 0xb1, 0x1c, 0xc3, 0x85, 0xc7, 0x72,
+	0x0c, 0x37, 0x1e, 0xcb, 0x31, 0x24, 0xb1, 0x81, 0xbd, 0x65, 0x0c, 0x08, 0x00, 0x00, 0xff, 0xff,
+	0x06, 0x0f, 0x95, 0xf1, 0xfe, 0x00, 0x00, 0x00,
 }
 
-func (this *AwsLbTargetGroupAttachment) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*AwsLbTargetGroupAttachment)
-	if !ok {
-		that2, ok := that.(AwsLbTargetGroupAttachment)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if this.AvailabilityZone != that1.AvailabilityZone {
-		return false
-	}
-	if this.Port != that1.Port {
-		return false
-	}
-	if this.TargetGroupArn != that1.TargetGroupArn {
-		return false
-	}
-	if this.TargetId != that1.TargetId {
-		return false
-	}
-	return true
-}
-func (this *AwsLbTargetGroupAttachment) GoString() string {
-	if this == nil {
-		return "nil"
-	}
-	s := make([]string, 0, 8)
-	s = append(s, "&terraform_aws.AwsLbTargetGroupAttachment{")
-	s = append(s, "AvailabilityZone: "+fmt.Sprintf("%#v", this.AvailabilityZone)+",\n")
-	s = append(s, "Port: "+fmt.Sprintf("%#v", this.Port)+",\n")
-	s = append(s, "TargetGroupArn: "+fmt.Sprintf("%#v", this.TargetGroupArn)+",\n")
-	s = append(s, "TargetId: "+fmt.Sprintf("%#v", this.TargetId)+",\n")
-	s = append(s, "}")
-	return strings.Join(s, "")
-}
-func valueToGoStringAwsLbTargetGroupAttachment(v interface{}, typ string) string {
-	rv := reflect.ValueOf(v)
-	if rv.IsNil() {
-		return "nil"
-	}
-	pv := reflect.Indirect(rv).Interface()
-	return fmt.Sprintf("func(v %v) *%v { return &v } ( %#v )", typ, typ, pv)
-}
 func (m *AwsLbTargetGroupAttachment) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -258,27 +201,6 @@ func sovAwsLbTargetGroupAttachment(x uint64) (n int) {
 }
 func sozAwsLbTargetGroupAttachment(x uint64) (n int) {
 	return sovAwsLbTargetGroupAttachment(uint64((x << 1) ^ uint64((int64(x) >> 63))))
-}
-func (this *AwsLbTargetGroupAttachment) String() string {
-	if this == nil {
-		return "nil"
-	}
-	s := strings.Join([]string{`&AwsLbTargetGroupAttachment{`,
-		`AvailabilityZone:` + fmt.Sprintf("%v", this.AvailabilityZone) + `,`,
-		`Port:` + fmt.Sprintf("%v", this.Port) + `,`,
-		`TargetGroupArn:` + fmt.Sprintf("%v", this.TargetGroupArn) + `,`,
-		`TargetId:` + fmt.Sprintf("%v", this.TargetId) + `,`,
-		`}`,
-	}, "")
-	return s
-}
-func valueToStringAwsLbTargetGroupAttachment(v interface{}) string {
-	rv := reflect.ValueOf(v)
-	if rv.IsNil() {
-		return "nil"
-	}
-	pv := reflect.Indirect(rv).Interface()
-	return fmt.Sprintf("*%v", pv)
 }
 func (m *AwsLbTargetGroupAttachment) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)

@@ -8,8 +8,6 @@ import (
 	proto "github.com/gogo/protobuf/proto"
 	io "io"
 	math "math"
-	reflect "reflect"
-	strings "strings"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -28,8 +26,9 @@ type AwsLbListenerCertificate struct {
 	ListenerArn    string `protobuf:"bytes,2,opt,name=listener_arn,json=listenerArn,proto3" json:"listener_arn,omitempty"`
 }
 
-func (m *AwsLbListenerCertificate) Reset()      { *m = AwsLbListenerCertificate{} }
-func (*AwsLbListenerCertificate) ProtoMessage() {}
+func (m *AwsLbListenerCertificate) Reset()         { *m = AwsLbListenerCertificate{} }
+func (m *AwsLbListenerCertificate) String() string { return proto.CompactTextString(m) }
+func (*AwsLbListenerCertificate) ProtoMessage()    {}
 func (*AwsLbListenerCertificate) Descriptor() ([]byte, []int) {
 	return fileDescriptor_9f74ef33435ae163, []int{0}
 }
@@ -81,7 +80,7 @@ func init() {
 func init() { proto.RegisterFile("aws_lb_listener_certificate.proto", fileDescriptor_9f74ef33435ae163) }
 
 var fileDescriptor_9f74ef33435ae163 = []byte{
-	// 192 bytes of a gzipped FileDescriptorProto
+	// 162 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x52, 0x4c, 0x2c, 0x2f, 0x8e,
 	0xcf, 0x49, 0x8a, 0xcf, 0xc9, 0x2c, 0x2e, 0x49, 0xcd, 0x4b, 0x2d, 0x8a, 0x4f, 0x4e, 0x2d, 0x2a,
 	0xc9, 0x4c, 0xcb, 0x4c, 0x4e, 0x2c, 0x49, 0xd5, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0xe2, 0x2d,
@@ -89,59 +88,12 @@ var fileDescriptor_9f74ef33435ae163 = []byte{
 	0x70, 0x2c, 0x2f, 0xf6, 0x49, 0xf2, 0x81, 0xea, 0x70, 0x46, 0x68, 0x10, 0x52, 0xe7, 0xe2, 0x47,
 	0xd2, 0x1f, 0x9f, 0x58, 0x94, 0x27, 0xc1, 0xa8, 0xc0, 0xa8, 0xc1, 0x19, 0xc4, 0x87, 0x24, 0xec,
 	0x58, 0x94, 0x27, 0xa4, 0xc8, 0xc5, 0x03, 0xb7, 0x11, 0xa4, 0x8a, 0x09, 0xac, 0x8a, 0x1b, 0x26,
-	0xe6, 0x58, 0x94, 0xe7, 0x64, 0x72, 0xe1, 0xa1, 0x1c, 0xc3, 0x8d, 0x87, 0x72, 0x0c, 0x1f, 0x1e,
-	0xca, 0x31, 0x36, 0x3c, 0x92, 0x63, 0x5c, 0xf1, 0x48, 0x8e, 0xf1, 0xc4, 0x23, 0x39, 0xc6, 0x0b,
-	0x8f, 0xe4, 0x18, 0x1f, 0x3c, 0x92, 0x63, 0x7c, 0xf1, 0x48, 0x8e, 0xe1, 0xc3, 0x23, 0x39, 0xc6,
-	0x09, 0x8f, 0xe5, 0x18, 0x2e, 0x3c, 0x96, 0x63, 0xb8, 0xf1, 0x58, 0x8e, 0x21, 0x89, 0x0d, 0xec,
-	0x66, 0x63, 0x40, 0x00, 0x00, 0x00, 0xff, 0xff, 0x07, 0xa0, 0xad, 0x31, 0xd8, 0x00, 0x00, 0x00,
+	0xe6, 0x58, 0x94, 0xe7, 0x24, 0x71, 0xe2, 0x91, 0x1c, 0xe3, 0x85, 0x47, 0x72, 0x8c, 0x0f, 0x1e,
+	0xc9, 0x31, 0x4e, 0x78, 0x2c, 0xc7, 0x70, 0xe1, 0xb1, 0x1c, 0xc3, 0x8d, 0xc7, 0x72, 0x0c, 0x49,
+	0x6c, 0x60, 0x77, 0x19, 0x03, 0x02, 0x00, 0x00, 0xff, 0xff, 0x56, 0x8c, 0x5d, 0xbc, 0xbc, 0x00,
+	0x00, 0x00,
 }
 
-func (this *AwsLbListenerCertificate) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*AwsLbListenerCertificate)
-	if !ok {
-		that2, ok := that.(AwsLbListenerCertificate)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if this.CertificateArn != that1.CertificateArn {
-		return false
-	}
-	if this.ListenerArn != that1.ListenerArn {
-		return false
-	}
-	return true
-}
-func (this *AwsLbListenerCertificate) GoString() string {
-	if this == nil {
-		return "nil"
-	}
-	s := make([]string, 0, 6)
-	s = append(s, "&terraform_aws.AwsLbListenerCertificate{")
-	s = append(s, "CertificateArn: "+fmt.Sprintf("%#v", this.CertificateArn)+",\n")
-	s = append(s, "ListenerArn: "+fmt.Sprintf("%#v", this.ListenerArn)+",\n")
-	s = append(s, "}")
-	return strings.Join(s, "")
-}
-func valueToGoStringAwsLbListenerCertificate(v interface{}, typ string) string {
-	rv := reflect.ValueOf(v)
-	if rv.IsNil() {
-		return "nil"
-	}
-	pv := reflect.Indirect(rv).Interface()
-	return fmt.Sprintf("func(v %v) *%v { return &v } ( %#v )", typ, typ, pv)
-}
 func (m *AwsLbListenerCertificate) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -210,25 +162,6 @@ func sovAwsLbListenerCertificate(x uint64) (n int) {
 }
 func sozAwsLbListenerCertificate(x uint64) (n int) {
 	return sovAwsLbListenerCertificate(uint64((x << 1) ^ uint64((int64(x) >> 63))))
-}
-func (this *AwsLbListenerCertificate) String() string {
-	if this == nil {
-		return "nil"
-	}
-	s := strings.Join([]string{`&AwsLbListenerCertificate{`,
-		`CertificateArn:` + fmt.Sprintf("%v", this.CertificateArn) + `,`,
-		`ListenerArn:` + fmt.Sprintf("%v", this.ListenerArn) + `,`,
-		`}`,
-	}, "")
-	return s
-}
-func valueToStringAwsLbListenerCertificate(v interface{}) string {
-	rv := reflect.ValueOf(v)
-	if rv.IsNil() {
-		return "nil"
-	}
-	pv := reflect.Indirect(rv).Interface()
-	return fmt.Sprintf("*%v", pv)
 }
 func (m *AwsLbListenerCertificate) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
