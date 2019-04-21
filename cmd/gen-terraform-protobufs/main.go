@@ -317,6 +317,8 @@ func main() {
 			continue
 		}
 
+		name = strings.TrimPrefix(name, "aws_")
+
 		msg, err := newMessage(name, resource)
 		if err != nil {
 			log.Errorf("newMessage(%s): %s", name, err)

@@ -1,7 +1,7 @@
 syntax = "proto3";
 package terraform.aws;
 
-message AwsLbTargetGroup {
+message LbTargetGroup {
   message HealthCheck {
     int64 healthy_threshold = 1;
     int64 interval = 2;

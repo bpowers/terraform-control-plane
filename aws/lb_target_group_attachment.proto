@@ -1,7 +1,7 @@
 syntax = "proto3";
 package terraform.aws;
 
-message AwsLbTargetGroupAttachment {
+message LbTargetGroupAttachment {
   string availability_zone = 1;
   int64 port = 2;
   string target_group_arn = 3;
