@@ -1,7 +1,0 @@
-syntax = "proto3";
-package terraform.aws;
-
-message LbListenerCertificate {
-  string certificate_arn = 1;
-  string listener_arn = 2;
-}

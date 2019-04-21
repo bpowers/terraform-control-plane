@@ -39,7 +39,7 @@ func (ctx *context) lookup(name string) *messageDef {
 }
 
 type fieldType interface {
-	protoType(ctx *context) (string, error)
+	protoType(ctx *context) (string, string, error)
 }
 
 type valueType struct {
@@ -49,9 +49,7 @@ type valueType struct {
 
 var setErrorOnce sync.Once
 
-func (ty *valueType) protoType(ctx *context) (string, error) {
-	var err error
-	ptype := ""
+func (ty *valueType) protoType(ctx *context) (ptype string, validation string, err error) {
 
 	switch ty.Type {
 	case schema.TypeBool:
@@ -63,50 +61,60 @@ func (ty *valueType) protoType(ctx *context) (string, error) {
 	case schema.TypeString:
 		ptype = "string"
 	case schema.TypeSet:
-		setErrorOnce.Do(func() {
-			log.Infof("TODO: add gogoprotobuf unique constraint for Set")
-		})
+		validation = "[(validate.rules).repeated.unique = true]"
+		if _, ok := ty.ElementType.(*valueType); !ok {
+			setErrorOnce.Do(func() {
+				log.Infof("TODO: gogoprotobuf unique constraint only works for scalar types, not %#v", ty.ElementType)
+			})
+			validation = ""
+		}
 		fallthrough
 	case schema.TypeList:
 		ptype = "repeated "
 		// TODO fix this after fixing resources below
 		if ty.ElementType != nil {
-			eType, err := ty.ElementType.protoType(ctx)
+			eType, suffix, err := ty.ElementType.protoType(ctx)
 			if err != nil {
-				return "", errors.Wrapf(err, "%#v.protoType", ty.ElementType)
+				return "", "", errors.Wrapf(err, "%#v.protoType", ty.ElementType)
+			}
+			if suffix != "" {
+				return "", "", fmt.Errorf("%#v.protoType: didn't expect Elem to require suffix", ty.ElementType)
 			}
 			ptype += eType
 		} else {
 			log.Warnf("nil repeated type for %#v", ty)
 		}
 	case schema.TypeMap:
-		var valueType string
+		var valueType, suffix string
 		if ty.ElementType != nil {
-			valueType, err = ty.ElementType.protoType(ctx)
+			valueType, suffix, err = ty.ElementType.protoType(ctx)
 			if err != nil {
-				return "", errors.Wrapf(err, "%#v.protoType", ty.ElementType)
+				return "", "", errors.Wrapf(err, "%#v.protoType", ty.ElementType)
+			}
+			if suffix != "" {
+				return "", "", fmt.Errorf("%#v.protoType: didn't expect Elem to require suffix", ty.ElementType)
 			}
 		} else {
 			log.Warnf("nil map type for %#v", ty)
 		}
 		ptype = fmt.Sprintf("map<string, %s>", valueType)
 	default:
-		return "", errors.Errorf(":ohno: unknown Schema.Type %#v", ty.Type)
+		return "", "", errors.Errorf(":ohno: unknown Schema.Type %#v", ty.Type)
 	}
 
-	return ptype, nil
+	return ptype, validation, nil
 }
 
 type referenceType struct {
 	Name string
 }
 
-func (ty *referenceType) protoType(ctx *context) (string, error) {
+func (ty *referenceType) protoType(ctx *context) (string, string, error) {
 	msg := ctx.lookup(ty.Name)
 	if msg == nil {
-		return "", fmt.Errorf("reference to type not in context: %s", ty.Name)
+		return "", "", fmt.Errorf("reference to type not in context: %s", ty.Name)
 	}
-	return ty.Name, nil
+	return ty.Name, "", nil
 }
 
 // keys returns a sorted list of keys for a given schema map
@@ -134,12 +142,18 @@ type fieldDef struct {
 func (f *fieldDef) protoField(ctx *context) (string, error) {
 	// TODO: required annotation
 
-	ty, err := f.Type.protoType(ctx)
+	ty, suffix, err := f.Type.protoType(ctx)
 	if err != nil {
 		return "", err
 	}
+	if !strings.HasPrefix(suffix, " ") {
+		suffix = " " + suffix
+	}
+	if !strings.HasSuffix(suffix, ";") {
+		suffix += ";"
+	}
 	name := strcase.ToSnake(f.Name)
-	return fmt.Sprintf("%s %s = %d;", ty, name, f.Number), nil
+	return fmt.Sprintf("%s %s = %d%s", ty, name, f.Number, suffix), nil
 }
 
 type messageDef struct {
@@ -326,7 +340,7 @@ func main() {
 
 		path := fmt.Sprintf("%s/%s.proto", dirPath, name)
 
-		contents := fmt.Sprintf(`syntax = "proto3";`+"\npackage terraform.aws;\n\n%s\n", msg.String())
+		contents := fmt.Sprintf(`syntax = "proto3";`+"\npackage terraform.aws;\nimport \"validate/validate.proto\";\n\n%s\n", msg.String())
 
 		if err = ioutil.WriteFile(path, []byte(contents), 0644); err != nil {
 			log.Fatalf("WriteFile(%q): %s", path, err)

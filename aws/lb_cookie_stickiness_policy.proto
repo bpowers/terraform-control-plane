@@ -1,9 +1,0 @@
-syntax = "proto3";
-package terraform.aws;
-
-message LbCookieStickinessPolicy {
-  int64 cookie_expiration_period = 1;
-  int64 lb_port = 2;
-  string load_balancer = 3;
-  string name = 4;
-}
